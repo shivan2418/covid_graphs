@@ -13,4 +13,4 @@ gunicorn
 dj-database-url
 whitenoise
 psycopg2-binary
-pandas==1.0.5
+pandas
