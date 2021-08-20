@@ -1,1 +1,1 @@
-web:gunicorn covid_graphs.wsgi
+web: gunicorn covid_graphs.wsgi
