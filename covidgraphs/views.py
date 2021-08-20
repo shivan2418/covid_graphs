@@ -1,16 +1,19 @@
-import json
 from django.http import JsonResponse
-from functools import lru_cache
-from django.shortcuts import render
-import pandas as pd
-import requests
+import logging
 import os
 import time
+from functools import lru_cache
+
+import pandas as pd
+import requests
 from dateutil import parser
+from django.http import JsonResponse
+from django.shortcuts import render
 from pandas import DataFrame
 
-from .constants import DATA_DIR,COVID_DATA_FILE,COVID_DATA_URL,LAST_UPDATE_URL,LAST_CHECK_FILE
 from covidgraphs.templatetags.filter import parse_var
+from .constants import DATA_DIR, COVID_DATA_FILE, COVID_DATA_URL, LAST_UPDATE_URL, LAST_CHECK_FILE
+
 
 def newer_data_available()-> bool:
     """Returns true is newer data is available or no file is found"""
@@ -32,6 +35,7 @@ def newer_data_available()-> bool:
 
 def get_newest_data() -> DataFrame:
     """Downloads the newest covid data"""
+    logging.info("Getting newest covid data")
     page = requests.get(COVID_DATA_URL)
 
     with open(COVID_DATA_FILE,'w') as f:
@@ -45,7 +49,8 @@ def get_newest_data() -> DataFrame:
     return df
 
 def parse_csv_data() -> DataFrame:
-    """"""
+    """Turn the csv file into a dataframe"""
+    logging.info("parsing csv data")
     df = pd.read_csv(COVID_DATA_FILE)
 
     df.date.map(pd.to_datetime)
