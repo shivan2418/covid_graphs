@@ -1,0 +1,29 @@
+#chart_container{
+ position: relative;
+  height:50vh;
+  width:80vw;
+  margin:auto;
+}
+
+#last_updated{
+ font-weight: lighter;
+}
+
+#queryform_container{
+ margin:auto;
+ display: block;
+ width:50%
+
+}
+
+#chart_controls{
+ display: flex;
+ justify-content: space-between;
+ color:grey;
+ font-size: 1rem;
+}
+
+#help_tip{
+ margin-top: 0.5rem;
+ width: 50%;
+}

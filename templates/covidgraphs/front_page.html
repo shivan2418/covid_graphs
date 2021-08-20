@@ -1,0 +1,216 @@
+{% extends 'covidgraphs/base.html' %}
+{% load inclusion_tags %}
+{% load filter %}
+{% block content %}
+
+    <div id="queryform_container">
+        <form id="queryform" method="get" action="#">
+
+            <label for="country"></label>
+            <input list="countries" id="country" name="country"/>
+
+            <datalist id="countries">
+                {% for c in countries %}
+                    <option value="{{ c }}">{{ c|parse_var }}</option>
+                {% endfor %}
+            </datalist>
+
+            <label for="var1"></label>
+            <input list="vars1" id="var1" name="var1"/>
+
+            <datalist id="vars1">
+                {% for c in variables %}
+                    <option value="{{ c }}">{{ c|parse_var }}</option>
+                {% endfor %}
+            </datalist>
+
+            <label for="var2"></label>
+            <input list="vars2" id="var2" name="var2"/>
+
+            <datalist id="vars2">
+                {% for c in variables %}
+                    <option value="{{ c }}">{{ c|parse_var }}</option>
+                {% endfor %}
+            </datalist>
+
+            <button type="button" id="submit">Generate</button>
+        </form>
+        <div id="help_tip">Select data from the input boxes above to generate a graph</div>
+
+    </div>
+
+    <div id="chart_container">
+        <canvas id="myChart"></canvas>
+        <div id="chart_controls">
+            {% last_modified %}
+            <div id="source">Source: <a href="https://github.com/owid/covid-19-data">Our World In Data</a></div>
+        </div>
+        <button id="copy_link">Copy Chart Link</button>
+
+    </div>
+
+    <script>
+        //variables
+        var ctx = document.getElementById('myChart').getContext('2d');
+        var myChart = new Chart(ctx, {})
+
+
+        var var1_col = 'red';
+        var var2_col = 'blue';
+
+        // event listeners
+        document.getElementById('submit').onclick = () => {
+            let form = new FormData(document.getElementById('queryform'));
+            let params = new URLSearchParams(form)
+            window.history.replaceState(null, "", `?${params.toString()}`)
+            get_data(form)
+        }
+
+        $('input').on('change', () => {
+            enable_disable_generate_button()
+        })
+
+        document.getElementById(('copy_link')).onclick = () => {
+            var text = window.location.href;
+            navigator.clipboard.writeText(text).then(function () {
+                console.log('Async: Copying to clipboard was successful!');
+            }, function (err) {
+                console.error('Async: Could not copy text: ', err);
+            });
+        }
+
+        function draw_graphs(data) {
+            try {
+                myChart.destroy();
+            } catch {
+                null;
+            }
+
+            myChart = new Chart(ctx, {
+                type: "line",
+                title: {text: "title"},
+                maintainAspectRatio: false,
+                data:
+                    {
+                        datasets: [{
+                            label: data.query_var_1,
+                            yAxisID: "A",
+                            data: data.vars1,
+                            backgroundColor: [var1_col]
+                        },
+                            {
+                                yAxisID: "B",
+                                label: data.query_var_2,
+                                data: data.vars2,
+                                backgroundColor: [var2_col]
+
+                            }]
+
+
+                    },
+                options: {
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: `${data.country} - ${data.query_var_1} vs ${data.query_var_2}`,
+                            font: {size: 24},
+                            padding: {
+                                top: 30,
+                                bottom: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        A: {
+                            title: {
+                                color: var1_col,
+                                display: true,
+                                text: data.query_var_1
+                            },
+                            type: 'linear',
+                            position: 'left',
+                        },
+                        B: {
+                            title: {
+                                color: var2_col,
+                                display: true,
+                                text: data.query_var_2
+                            },
+                            type: 'linear',
+                            position: 'right',
+                        }
+                    }
+                }
+
+            });
+        }
+
+        function get_data(form) {
+            $("#help_tip").hide()
+
+            fetch({% url 'graph_data' %}, {
+                method: "POST", body: form, credentials: 'same-origin',
+                headers: {
+                    "X-CSRFToken": getCookie("csrftoken")
+                }
+            })
+                .then(res => res.json())
+                .then(j => {
+                    draw_graphs(j)
+                })
+        }
+
+        function getCookie(name) {
+            var cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                var cookies = document.cookie.split(';');
+                for (var i = 0; i < cookies.length; i++) {
+                    var cookie = jQuery.trim(cookies[i]);
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        function enable_disable_generate_button() {
+            const btn = $('#submit');
+
+            let country = $("#country");
+            let var1 = $("#var1");
+            let var2 = $("#var2");
+
+            if ([country, var1, var2].every(input => input[0].value !== "")) {
+                btn.prop('disabled', false)
+            } else {
+                btn.prop("disabled", true)
+            }
+        }
+
+        $(document).ready(() => {
+            // Generate a graph based on query params on page load
+
+
+            var urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('country') && urlParams.has('var1') && urlParams.has("var2")) {
+                let form = new FormData();
+                for (const [key, value] of urlParams.entries()) {
+                    form.set(key, value)
+                    $(`input[name=${key}]`).val(value)
+                }
+
+                get_data(form)
+                enable_disable_generate_button()
+
+            } else {
+                $("#help_tip").show()
+            }
+        })
+
+    </script>
+
+
+{% endblock %}
