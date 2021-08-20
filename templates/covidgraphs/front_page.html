@@ -5,6 +5,7 @@
 
     <div id="queryform_container">
         <form id="queryform" method="get" action="#">
+        {% csrf_token %}
 
             <label for="country"></label>
             <input list="countries" id="country" name="country"/>
@@ -151,7 +152,7 @@
             fetch({% url 'graph_data' %}, {
                 method: "POST", body: form, credentials: 'same-origin',
                 headers: {
-                    "X-CSRFToken": getCookie("csrftoken")
+                    "X-CSRFToken": $('input[name=csrfmiddlewaretoken]').val()
                 }
             })
                 .then(res => res.json())
