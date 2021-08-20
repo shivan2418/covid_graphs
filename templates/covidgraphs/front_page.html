@@ -62,6 +62,7 @@
         // event listeners
         document.getElementById('submit').onclick = () => {
             let form = new FormData(document.getElementById('queryform'));
+            form.delete('csrfmiddlewaretoken')
             let params = new URLSearchParams(form)
             window.history.replaceState(null, "", `?${params.toString()}`)
             get_data(form)
