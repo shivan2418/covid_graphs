@@ -9,8 +9,8 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
 import os
+import django_heroku
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -133,3 +133,4 @@ COVID_DATA_FILE = os.path.join(DATA_DIR,'covid_data.csv')
 LAST_UPDATE_URL = "https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data-last-updated-timestamp.txt"
 COVID_DATA_URL='https://raw.githubusercontent.com/owid/covid-19-data/master/public/data/owid-covid-data.csv'
 
+django_heroku.settings(locals())

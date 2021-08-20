@@ -8,3 +8,8 @@ six==1.16.0
 sqlparse==0.4.1
 typing-extensions==3.10.0.0
 wheel==0.36.2
+django_heroku
+gunicorn
+dj-database-url
+whitenoise
+psycopg2-binary
